@@ -10,6 +10,7 @@ var path = require('path')
 var express = require('express')
 var webpack = require('webpack')
 var proxyMiddleware = require('http-proxy-middleware')
+var expressAutoPathRouter = require('express-auto-path-router')
 var webpackConfig = {{#if_or unit e2e}}process.env.NODE_ENV === 'testing'
   ? require('./webpack.prod.conf')
   : {{/if_or}}require('./webpack.dev.conf')
@@ -18,9 +19,6 @@ var webpackConfig = {{#if_or unit e2e}}process.env.NODE_ENV === 'testing'
 var port = process.env.PORT || config.dev.port
 // automatically open browser, if not set will be false
 var autoOpenBrowser = !!config.dev.autoOpenBrowser
-// Define HTTP proxies to your custom API backend
-// https://github.com/chimurai/http-proxy-middleware
-var proxyTable = config.dev.proxyTable
 
 var app = express()
 var compiler = webpack(webpackConfig)
@@ -42,14 +40,21 @@ compiler.plugin('compilation', function (compilation) {
   })
 })
 
-// proxy api requests
-Object.keys(proxyTable).forEach(function (context) {
-  var options = proxyTable[context]
-  if (typeof options === 'string') {
-    options = { target: options }
-  }
-  app.use(proxyMiddleware(options.filter || context, options))
-})
+// Define HTTP proxies to your custom API backend
+// https://github.com/chimurai/http-proxy-middleware
+if (config.dev.dataType === 'proxy') {
+  Object.keys(config.dev.proxyTable).forEach(function (context) {
+    var options = proxyTable[context]
+    if (typeof options === 'string') {
+      options = { target: options }
+    }
+    app.use(proxyMiddleware(options.filter || context, options))
+  })
+}
+// https://github.com/longze/express-auto-path-router
+else if (config.dev.dataType === 'mock') {
+  app.use(expressAutoPathRouter(config.dev.mockTable.rootPath))
+}
 
 // handle fallback for HTML5 history API
 app.use(require('connect-history-api-fallback')())

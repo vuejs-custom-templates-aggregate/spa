@@ -27,7 +27,16 @@ module.exports = {
     autoOpenBrowser: true,
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {},
+    dataType: 'mock',  // proxy:代理; mock:模拟; full-stack:全栈(默认此项)
+    proxyTable: {
+      '/': {
+        target: 'http://172.0.0.1:8800/'
+      }
+    },
+    mockTable: {
+      // 相对于整个项目的路径
+      rootPath: './mock/'
+    },
     // CSS Sourcemaps off by default because relative paths are "buggy"
     // with this option, according to the CSS-Loader README
     // (https://github.com/webpack/css-loader#sourcemaps)
